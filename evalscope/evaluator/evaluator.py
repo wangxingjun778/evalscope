@@ -3,7 +3,7 @@
 import json
 import os
 import time
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from copy import deepcopy
 from tqdm import tqdm
@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Union
 from evalscope.benchmarks import DataAdapter
 from evalscope.config import TaskConfig
 from evalscope.constants import AnswerKeys, DumpMode, EvalStage, EvalType, ReviewKeys
-from evalscope.models import BaseModelAdapter, CustomModelAdapter
+from evalscope.models import BaseModelAdapter
 from evalscope.report import Report, gen_table
 from evalscope.utils import dict_torch_dtype_to_str, gen_hash
 from evalscope.utils.io_utils import OutputsStructure, dump_jsonl_data, jsonl_to_list
@@ -37,7 +37,6 @@ class Evaluator(object):
     """
 
     def __init__(self,
-                 dataset_name_or_path: str,
                  data_adapter: DataAdapter,
                  model_adapter: BaseModelAdapter,
                  outputs: OutputsStructure = None,
@@ -45,7 +44,7 @@ class Evaluator(object):
                  **kwargs):
 
         self.dataset_name = data_adapter.name
-        self.dataset_name_or_path = os.path.expanduser(dataset_name_or_path)
+        self.dataset_name_or_path = os.path.expanduser(data_adapter.dataset_id)
         self.model_name = task_cfg.model_id
         self.custom_task_name = f'{self.model_name}_{self.dataset_name}'
 
@@ -64,15 +63,19 @@ class Evaluator(object):
 
     def load_dataset(self):
         dataset = self.data_adapter.load(
-            dataset_name_or_path=self.dataset_name_or_path,
-            subset_list=self.data_adapter.subset_list,
-            work_dir=os.path.expanduser(self.task_cfg.dataset_dir),
-            datasets_hub=self.dataset_hub,
-            **self.kwargs)
+            work_dir=os.path.expanduser(self.task_cfg.dataset_dir), datasets_hub=self.dataset_hub, **self.kwargs)
 
         # Get prompts from dataset
         prompts = self.data_adapter.gen_prompts(data_dict=dataset)
-        return prompts
+
+        # Repeat and limit prompts
+        repeated_prompts = defaultdict(list)
+        for subset_name, prompts_list in prompts.items():
+            limit = self.task_cfg.limit or len(prompts_list)
+            prompts_list = prompts_list[:limit]
+            for prompt in prompts_list:
+                repeated_prompts[subset_name].extend([prompt] * self.task_cfg.repeat)
+        return repeated_prompts
 
     def _generate_answer_id(self, model_cfg, input_d, infer_cfg):
         model_cfg_str = json.dumps(OrderedDict(sorted(dict_torch_dtype_to_str(model_cfg).items())), ensure_ascii=False)
@@ -347,8 +350,6 @@ class Evaluator(object):
 
         prompts = self.load_dataset()
         for subset_name, prompts_list in prompts.items():
-            limit = self.task_cfg.limit or len(prompts_list)
-            prompts_list = prompts_list[:limit]
 
             answers_list: list = self.get_answers(
                 subset_name=subset_name, prompts_list=prompts_list, infer_cfg=self.task_cfg.generation_config, **kwargs)

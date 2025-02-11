@@ -76,13 +76,13 @@ class TestRun(unittest.TestCase):
                         'mmlu_pro',
                         # 'bbh',
                         'hellaswag',
-                        # 'gsm8k',
-                        # 'arc'
-                        # 'race',
+                        'gsm8k',
+                        'arc',
+                        'race',
                         # 'truthful_qa',
                         # 'trivia_qa',
                         ],
-                    'limit': 20,
+                    'limit': 2,
                     'debug': True}
         run_task(task_cfg=task_cfg)
 
@@ -93,9 +93,9 @@ class TestRun(unittest.TestCase):
 
         task_cfg = TaskConfig(
             model='qwen/Qwen2-0.5B-Instruct',
-            datasets=['ceval', 'general_qa'],  # 数据格式，选择题格式固定为 'ceval'
+            datasets=['general_mcq', 'general_qa'],  # 数据格式，选择题格式固定为 'ceval'
             dataset_args={
-                'ceval': {
+                'general_mcq': {
                     'local_path': 'custom_eval/text/mcq',  # 自定义数据集路径
                     'subset_list': [
                         'example'  # 评测数据集名称，上述 *_dev.csv 中的 *
