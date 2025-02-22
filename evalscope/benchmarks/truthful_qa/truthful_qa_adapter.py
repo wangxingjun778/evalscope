@@ -185,9 +185,7 @@ class TruthfulQaAdapter(DataAdapter):
 
             return mc1_choices + mc2_choices
 
-        # context: str = self.QA_PROMPT + '\n\nQ: ' + input_d['question'] + '\nA: '
-        # TODO: ONLY FOR TEST !
-        context: str = 'Q: ' + input_d['question'] + '\nA: '
+        context: str = self.QA_PROMPT + '\n\nQ: ' + input_d['question'] + '\nA: '
 
         if subset_name == 'generation':
             ctx_continuation_pair_list = []  # TODO: to be added
