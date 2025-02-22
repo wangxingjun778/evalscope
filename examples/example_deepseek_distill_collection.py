@@ -1,20 +1,18 @@
-from evalscope.collections.sampler import WeightedSampler
-from evalscope.collections.schema import CollectionSchema, DatasetInfo
+from evalscope.collections import CollectionSchema, DatasetInfo, WeightedSampler
 from evalscope.utils.io_utils import dump_jsonl_data
 
+# define the schema
 schema = CollectionSchema(name='DeepSeekDistill', datasets=[
             CollectionSchema(name='Math', datasets=[
-                    DatasetInfo(name='math_500', weight=1, task_type='math', tags=['en'], args={'few_shot_num': 0}),
-                    DatasetInfo(name='gpqa', weight=1, task_type='math', tags=['en'],  args={'subset_list': ['gpqa_diamond'], 'few_shot_num': 0}),
-                    DatasetInfo(name='aime24', weight=1, task_type='math', tags=['en'], args={'few_shot_num': 0}),
+                DatasetInfo(name='math_500', weight=1, task_type='math', tags=['en'], args={'few_shot_num': 0}),
+                DatasetInfo(name='gpqa', weight=1, task_type='math', tags=['en'],  args={'subset_list': ['gpqa_diamond'], 'few_shot_num': 0}),
+                DatasetInfo(name='aime24', weight=1, task_type='math', tags=['en'], args={'few_shot_num': 0}),
             ])
         ])
 
-print(schema.to_dict())
-print(schema.flatten())
-
-#  get the mixed data
+# get the mixed data
 mixed_data = WeightedSampler(schema).sample(100000)  # set a large number to ensure all datasets are sampled
+# dump the mixed data to a jsonl file
 dump_jsonl_data(mixed_data, 'outputs/deepseek_distill_test.jsonl')
 
 from evalscope import TaskConfig, run_task
@@ -34,12 +32,12 @@ task_cfg = TaskConfig(
             'local_path': 'outputs/deepseek_distill_test.jsonl'
         }
     },
-    eval_batch_size=16,
-    repeat=5,  # num of samples per request
+    eval_batch_size=32,
     generation_config={
         'max_tokens': 30000,  # avoid exceed max length
         'temperature': 0.6,
         'top_p': 0.95,
+        'n': 1,  # num of responses per sample, note that lmdeploy only supports n=1
     },
 )
 

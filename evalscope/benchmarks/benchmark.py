@@ -17,12 +17,13 @@ class BenchmarkMeta:
     data_adapter: 'DataAdapter'
     model_adapter: BaseModelAdapter
     subset_list: List[str] = field(default_factory=list)
-    metric_list: List[dict] = field(default_factory=list)
+    metric_list: List[str] = field(default_factory=list)
     few_shot_num: int = 0
     few_shot_random: bool = False
     train_split: Optional[str] = None
     eval_split: Optional[str] = None
     prompt_template: Optional[str] = None
+    system_prompt: Optional[str] = None
 
     def _update(self, args: dict):
         if args.get('local_path'):
@@ -40,7 +41,6 @@ class BenchmarkMeta:
         # cur_dict['metric_list'] = [metric['name'] for metric in self.metric_list]
         del cur_dict['data_adapter']
         del cur_dict['model_adapter']
-        del cur_dict['metric_list']
         return cur_dict
 
     def get_data_adapter(self, config: dict = {}) -> 'DataAdapter':
@@ -59,7 +59,7 @@ class Benchmark:
     @classmethod
     def get(cls, name: str) -> 'BenchmarkMeta':
         if name not in BENCHMARK_MAPPINGS:
-            raise Exception(f'Unknown benchmark: {name}. Available tasks: {BENCHMARK_MAPPINGS.keys()}')
+            raise Exception(f'Unknown benchmark: {name}. Available tasks: {list(BENCHMARK_MAPPINGS.keys())}')
         benchmark = BENCHMARK_MAPPINGS[name]
         return benchmark
 

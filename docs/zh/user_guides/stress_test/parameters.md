@@ -24,8 +24,8 @@
 - `--headers` 额外的HTTP头，格式为`key1=value1 key2=value2`。该头将用于每个查询。
 
 ## 请求控制
-- `--number` 发出的请求数量，默认为None，表示基于数据集数量发送请求。
-- `--parallel` 设置并发请求的worker数量，默认为1。
+- `--number` 发出的请求的总数量；默认为None，表示基于数据集数量发送请求。
+- `--parallel` 并发请求的数量，默认为1。
 - `--rate` 每秒生成的请求数量（并不发送请求），默认为-1，表示所有请求将在时间0生成，没有间隔；否则，我们使用泊松过程生成请求间隔。
   ```{tip}
   在本工具的实现中请求生成与发送是分开的：
@@ -61,6 +61,7 @@
 - `--stop-token-ids` 设置停止生成的token的ID。
 - `--temperature` 采样温度。
 - `--top-p` top_p采样。
+- `--top-k` top_k采样。
 
 ## 数据存储
 - `--wandb-api-key` wandb API密钥，如果设置，则度量将保存到wandb。
