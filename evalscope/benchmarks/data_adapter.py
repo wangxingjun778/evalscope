@@ -184,6 +184,8 @@ class DataAdapter(ABC):
             else:
                 review_res = review_res_list
             res_list.append({'metric_name': metric_name, 'score': metric_func(review_res), 'num': len(review_res)})
+        # TODO: ONLY FOR TEST
+        print(f'>>> res_list-0: {res_list[0]}')
         return res_list
 
     def gen_report(self, subset_score_map: dict, report_name: str = None, **kwargs) -> Report:

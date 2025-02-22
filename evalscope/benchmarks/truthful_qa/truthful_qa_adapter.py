@@ -185,7 +185,9 @@ class TruthfulQaAdapter(DataAdapter):
 
             return mc1_choices + mc2_choices
 
-        context: str = self.QA_PROMPT + '\n\nQ: ' + input_d['question'] + '\nA: '
+        # context: str = self.QA_PROMPT + '\n\nQ: ' + input_d['question'] + '\nA: '
+        # TODO: ONLY FOR TEST !
+        context: str = 'Q: ' + input_d['question'] + '\nA: '
 
         if subset_name == 'generation':
             ctx_continuation_pair_list = []  # TODO: to be added
@@ -288,4 +290,9 @@ class TruthfulQaAdapter(DataAdapter):
         #     'score': self.metric_list[0].object(mc2_list),
         #     'num': len(mc2_list)
         # }]
+
+        # TODO: ONLY FOR TEST !
+        print(f'>>> len mc1_list: {len(mc1_list)},  >>mc1_list: {mc1_list}')
+        print(f'>>> len mc2_list: {len(mc2_list)}, >>mc2_list: {mc2_list}')
+
         return super().compute_metric(mc2_list)
